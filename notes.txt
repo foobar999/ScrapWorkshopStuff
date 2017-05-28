@@ -1,0 +1,83 @@
+Scrapy:
+- Framework
+- zum Crawlen (v.A. Websites)
+- zum Extrahieren strukturierter Daten
+- Data Mining, ...
+ 
+ Aufruf
+- scrapy Shell:
+	- öffne Shell 
+	- scrapy shell "http://quotes.toscrape.com/page/1/"
+	- ernöglicht interaktive Betrachtung
+- Projektverzeichnis:
+	- scrapy startproject <PROJNAME> (hier: tutorial)
+	- lege in ./tutorial/spiders neuen Spider in Datei <FILENAME>.py an (z.B. myspider.py)
+		- Attribut .name in Spiderklasse muss eindeutig sein: z.B. name = myspider 
+	- scrapy crawl myspider [-o outfile.xml] 
+		- muss zum Attribut passen?
+- von Pythonskript aus:
+	- über scrapy-Befehl:
+		cmd = 'scrapy crawl myspider -o outfile.xml'
+    	scrapy.cmdline.execute(cmd.split())
+    - API:
+    	?
+	
+CSS:
+- response.css('title'): repräsentiert Selektor-Ergebnis
+	-> [<Selector xpath='descendant-or-self::title' data='<title>Quotes to Scrape</title>'>]
+
+- response.css('title::text') mit Pseudo-Element "::text": liefert Textelemente zwischen <title>...</title>
+	-> [<Selector xpath='descendant-or-self::title/text()' data='Quotes to Scrape'>]
+	
+- response.css('title::text').extract() mit Methode extract(): extrahiert Inhalt des Selektors:
+	-> ['Quotes to Scrape']
+	
+- extract_first(): liefert Inhalt vom 1. selektierten Objekt
+
+- Ergebnisse von Selektoren erneut zur Selktion nutzbar:
+	entries = response.css('div.row div.quote')
+    for i, entry in enumerate(entries):
+        entry_data = {
+            'author': entry.css('.author::text').extract(),
+            'text': entry.css('.text::text').extract()
+        }
+        print('entry {}: {}'.format(i, entry_data))
+    
+- itemprop:
+	- für "Mikroformate": <span itemprop="name">meintollername</span>
+	- mit z.B: über 'span[itemprop="name"]::text' selektierbar (funktioniert nur, falls genau 1 Wert hinter itemprop; alternativ span[itemprop~="name"])
+      
+- Attributzugriff:
+	- über Pseudoelement '::attr(itemprop)':
+		myitemprop = entry.css('.author::attr(itemprop)').extract()
+      
+XPath:
+- bracuhn wa dit?
+
+Persistenz:
+- in parse() mittels yield Dictionaries zurückgeben
+- "-o <OUTFILE>": schreibt die ganzen Daten in OUTFILE
+	- Dateiformat anhand Suffix bestimmt: "file1.csv" ist CSV-Datei, "file2.json" ist JSON-Datei
+- egal ob mit "-o" oder ohne: scrapy gibt einfach Lognachrichten je Datensatz aus
+- unterstützte Formate: übergebe Dateinamen mit falschem Suffix, scrapy gibt in Fehlernachricht unterstütze typen an
+	- bei mir: 'json', 'jsonlines', 'jl', 'csv', 'xml', 'marshal', 'pickle'
+- falls Datei bereits vorhanden: scrapy leert diese NICHT -> neue Daten drangehangen, JSON ggf. kaputt
+	- Abhilfe: mache dies im Pythonskript zuvor, rufe dann scrapy auf
+	
+Logging:
+- altes logging innerhalb Spidermethode:
+	self.log('looooggggg')
+	-> deprecated, taucht aber teilweise in Doku auf
+- neu: mit Python-Logging-API (Spiderklasse besitzt dazu Attribut logger):
+	self.logger.info('Nachricht mit Level INFO')
+- Level konfigurieren:
+	- ergänze Zeile in /tutorial/settings.py:
+		LOG_LEVEL = 'INFO'
+
+- scrapy speichert standardmäßig intern bereis besuchte URLs und vermeidet so mehrfaches Crawling, falls mehrere Seiten zur gleichen URL führen
+
+- Daten an callback übergeben: mit trick (meta):
+	https://docs.scrapy.org/en/latest/topics/request-response.html#topics-request-response-ref-request-callback-arguments
+
+
+
