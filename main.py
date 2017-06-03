@@ -10,7 +10,7 @@ import scrapy.cmdline
 
 def main():
     #cmd = 'scrapy runspider features_at_a_glance/quotes_spider.py -o quotes.xml'
-    cmd = 'scrapy crawl author -o author.xml'
+    cmd = 'scrapy crawl iter -o res.json'
     scrapy.cmdline.execute(cmd.split())
 
 if  __name__ =='__main__':
